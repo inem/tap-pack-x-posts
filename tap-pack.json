@@ -1,0 +1,10 @@
+{
+  "id":"x.posts", "version":"0.2.0",
+  "intent":"Index complete X post text from captured traffic, answer local lookups and persist user-bookmarked Markdown.",
+  "license":"MIT", "files":["LICENSE","reader.py","handler.py"],
+  "entrypoints":{
+    "reader":{"file":"reader.py","interface":"python-jsonl-v1"},
+    "handler":{"file":"handler.py","interface":"python-jsonl-v1"}
+  },
+  "access":{"origins":["https://x.com"],"capabilities":["capture.read","bridge.handle"]}
+}
