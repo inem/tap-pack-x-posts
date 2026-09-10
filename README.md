@@ -17,6 +17,11 @@ idempotent. Unbookmarking on X deliberately does not delete local material.
 Build and validate with the TAP Pack SDK. The pack uses Core's current
 `python-jsonl-v1` reader and handler contracts.
 
+## 0.2.2
+
+Both file-producing features declare their profile-relative output folders so a
+generic TAP presentation can show and reveal the exact location.
+
 ## 0.2.1
 
 The pack now declares its passive post index and local bookmark archive as

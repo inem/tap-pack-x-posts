@@ -1,5 +1,5 @@
 {
-  "id":"x.posts", "version":"0.2.1",
+  "id":"x.posts", "version":"0.2.2",
   "intent":"Index complete X post text from captured traffic, answer local lookups and persist user-bookmarked Markdown.",
   "license":"MIT", "files":["LICENSE","reader.py","handler.py"],
   "entrypoints":{
@@ -7,8 +7,8 @@
     "handler":{"file":"handler.py","interface":"python-jsonl-v1"}
   },
   "features":[
-    {"id":"post-index","label":"Post index","value":"Complete text from captured traffic"},
-    {"id":"bookmark-archive","label":"Saved bookmarks","value":"Local Markdown + index"}
+    {"id":"post-index","label":"Post index","value":"Complete text from captured traffic","folder":"data/readers/x.posts"},
+    {"id":"bookmark-archive","label":"Saved bookmarks","value":"Local Markdown + index","folder":"data/readers/x.posts/readable"}
   ],
   "access":{"origins":["https://x.com"],"capabilities":["capture.read","bridge.handle"]}
 }
