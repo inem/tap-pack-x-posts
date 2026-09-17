@@ -1,14 +1,19 @@
 {
-  "id":"x.posts", "version":"0.2.2",
-  "intent":"Index complete X post text from captured traffic, answer local lookups and persist user-bookmarked Markdown.",
-  "license":"MIT", "files":["LICENSE","reader.py","handler.py"],
-  "entrypoints":{
-    "reader":{"file":"reader.py","interface":"python-jsonl-v1"},
-    "handler":{"file":"handler.py","interface":"python-jsonl-v1"}
+  "id": "x.posts",
+  "version": "0.2.3",
+  "intent": "Index captured X posts and assemble a temporary ChatGPT copy payload with captured video subtitles.",
+  "license": "MIT",
+  "entrypoints": {
+    "reader": {"file": "reader.py", "interface": "python-jsonl-v1"},
+    "handler": {"file": "handler.py", "interface": "python-jsonl-v1"}
   },
-  "features":[
-    {"id":"post-index","label":"Post index","value":"Complete text from captured traffic","folder":"data/readers/x.posts"},
-    {"id":"bookmark-archive","label":"Saved bookmarks","value":"Local Markdown + index","folder":"data/readers/x.posts/readable"}
+  "files": ["LICENSE", "reader.py", "handler.py"],
+  "features": [
+    {"id": "post-index", "label": "Post index", "value": "Complete text from captured traffic", "folder": "data/readers/x.posts"},
+    {"id": "chat-copy", "label": "Chat copy", "value": "Post text plus captured video subtitles at copy time"}
   ],
-  "access":{"origins":["https://x.com"],"capabilities":["capture.read","bridge.handle"]}
+  "access": {
+    "origins": ["https://x.com"],
+    "capabilities": ["capture.read", "bridge.handle"]
+  }
 }

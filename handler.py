@@ -8,6 +8,8 @@ import sys
 from urllib.parse import urlsplit
 
 
+MAX_SUBTITLE_BYTES = 2 * 1024 * 1024
+
 def post_id(value):
     if not isinstance(value, str):
         return None
@@ -31,6 +33,72 @@ def lookup(profile_root, link):
             return None
         raise
     return row[0] if row else None
+
+
+def subtitle_material(profile_root, value):
+    """Resolve native caption artifacts for an observed X post without changing them."""
+    root = Path(profile_root) / 'data' / 'readers' / 'x.subtitles'
+    database = root / 'index.sqlite3'
+    try:
+        with sqlite3.connect('file:' + str(database) + '?mode=ro', uri=True) as db:
+            rows = db.execute('''
+                SELECT ct.track_id, ct.current_sha256, ct.vtt_url
+                FROM post_media AS pm
+                JOIN media_entities AS me ON me.media_key = pm.media_key
+                JOIN caption_tracks AS ct ON ct.media_id = me.media_id
+                WHERE pm.post_id = ?
+                ORDER BY ct.track_id
+            ''', (value,)).fetchall()
+    except sqlite3.OperationalError as error:
+        if 'unable to open' in str(error):
+            return []
+        raise
+
+    materials = []
+    for track_id, sha256, source_url in rows:
+        path = root / 'artifacts' / 'sha256' / f'{sha256}.vtt'
+        try:
+            if path.stat().st_size > MAX_SUBTITLE_BYTES:
+                continue
+            vtt = path.read_text(encoding='utf-8')
+        except OSError:
+            continue
+        materials.append({
+            'track_id': track_id,
+            'address': f'sha256:{sha256}',
+            'source_url': source_url,
+            'vtt': vtt,
+        })
+    return materials
+
+
+def chat_copy(profile_root, link):
+    value = post_id(link)
+    if value is None:
+        raise ValueError('invalid_post')
+    post = lookup(profile_root, link)
+    if post is None:
+        raise LookupError('not_found')
+
+    captions = subtitle_material(profile_root, value)
+    if not captions:
+        return {'text': post, 'captions': []}
+
+    blocks = [post, '---', '## Captured video subtitles']
+    for caption in captions:
+        blocks.extend([
+            '',
+            f'Native VTT · track {caption["track_id"]} · artifact `{caption["address"]}`',
+            f'Source: {caption["source_url"]}',
+            '',
+            '```vtt',
+            caption['vtt'].rstrip(),
+            '```',
+        ])
+    return {
+        'text': '\n'.join(blocks) + '\n',
+        'captions': [{key: caption[key] for key in ('track_id', 'address', 'source_url')} for caption in captions],
+    }
 
 
 def atomic_write(path, text):
@@ -106,6 +174,8 @@ def main():
         if action == 'save_bookmark':
             result = {'ok':True, 'value':save_bookmark(
                 context['profile_root'], link, args.get('markdown'))}
+        elif action == 'chat_copy':
+            result = {'ok':True, 'value':chat_copy(context['profile_root'], link)}
         elif action == 'lookup':
             text = lookup(context['profile_root'], link)
             if text is None:
